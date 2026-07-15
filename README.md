@@ -19,13 +19,14 @@ npm --prefix client install
 Start the backend in one terminal:
 
 ```bash
-GITHUB_TOKEN=github_pat_your_token npm run dev:server
+GITHUB_TOKEN=github_pat_your_token OPENAI_API_KEY=your_openai_api_key npm run dev:server
 ```
 
 On PowerShell:
 
 ```powershell
 $env:GITHUB_TOKEN = "github_pat_your_token"
+$env:OPENAI_API_KEY = "your_openai_api_key"
 npm run dev:server
 ```
 
@@ -48,5 +49,7 @@ The API runs on `http://localhost:3001`. During local frontend development, Vite
 ```
 
 Set `GITHUB_TOKEN` to a GitHub personal access token before starting the backend. A token with read access to the target repository can also access private repositories and receives a higher API rate limit. The backend can fetch public repositories without a token, subject to GitHub's lower unauthenticated rate limit.
+
+Set `OPENAI_API_KEY` before starting the backend to enable the issue-analysis pipeline. The pipeline forms a root-cause hypothesis, selects and retrieves relevant file contents, proposes a diff, and returns a PR-style explanation. Set `OPENAI_MODEL` to override the default analysis model.
 
 When GitHub reports a rate limit, the API responds with HTTP `429` and includes a `retryAfter` value in seconds when GitHub provides one.

@@ -4,6 +4,7 @@ import { mkdirSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { AgentPipelineError, runAnalysisPipeline } from './agent/index.js';
 import { fetchIssueAnalysis, GitHubApiError, parseGitHubIssueUrl } from './github.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,10 +37,11 @@ app.post('/analyze', async (req, res) => {
   try {
     const issueReference = parseGitHubIssueUrl(issueUrl.trim());
     const analysis = await fetchIssueAnalysis(issueReference);
+    const agent = await runAnalysisPipeline(analysis);
     db.prepare('INSERT INTO analyses (issue_url) VALUES (?)').run(issueUrl.trim());
-    return res.json(analysis);
+    return res.json({ ...analysis, agent });
   } catch (error) {
-    if (error instanceof GitHubApiError) {
+    if (error instanceof GitHubApiError || error instanceof AgentPipelineError) {
       const response = { error: error.message };
       if (error.retryAfter !== undefined) {
         response.retryAfter = error.retryAfter;

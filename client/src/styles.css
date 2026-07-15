@@ -24,8 +24,30 @@ button:disabled { cursor: wait; opacity: 0.65; }
 .results { padding-top: 28px; }
 .results-heading { display: flex; justify-content: space-between; align-items: baseline; }
 h2 { margin: 0; font-size: 1.15rem; }
+.analysis-result { margin-top: 18px; }
+.confidence-row { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 16px; padding: 16px; border: 1px solid #d5dce2; border-radius: 5px; background: #fff; }
+.section-label { margin: 0 0 2px; color: #52616f; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.confidence-row strong { font-size: 1.5rem; color: #1c6e63; }
+.confidence-track { height: 9px; overflow: hidden; border-radius: 999px; background: #dce6e5; }
+.confidence-track span { display: block; height: 100%; background: #1c6e63; }
+.result-section { margin-top: 28px; }
+h3 { margin: 0 0 12px; font-size: 1rem; }
+.steps-list { margin: 0; padding-left: 24px; }
+.steps-list > li { margin: 0 0 16px; padding-left: 4px; }
+.steps-list p, .steps-list ul { margin: 6px 0 0; color: #52616f; }
+.steps-list ul { padding-left: 20px; }
+.risks { color: #8b481d !important; }
+.files-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.files-list li { display: flex; gap: 12px; align-items: baseline; padding: 11px 12px; border-left: 3px solid #1c6e63; background: #fff; }
+.files-list code { color: #14564e; font-weight: 700; }
+.files-list span { color: #52616f; font-size: 0.9rem; }
+.diff { max-height: 560px; margin: 0; }
+.diff code { display: block; min-height: 1.5em; }
+.diff-addition { color: #0c6b3a; background: #e9f7ee; }
+.diff-removal { color: #9c2727; background: #fff0f0; }
+.diff-meta { color: #195e87; background: #eaf5fa; }
 .results-heading span { color: #1c6e63; font-size: 0.86rem; font-weight: 700; }
 .empty-state, .error { margin: 14px 0 0; color: #52616f; }
 .error { color: #a52b2b; }
 pre { overflow-x: auto; margin: 14px 0 0; padding: 18px; border: 1px solid #d5dce2; border-radius: 5px; background: #fff; color: #23303d; font-size: 0.9rem; line-height: 1.5; }
-@media (max-width: 600px) { .page-shell { padding: 44px 18px; } .input-row { flex-direction: column; } button { width: 100%; } }
+@media (max-width: 600px) { .page-shell { padding: 44px 18px; } .input-row { flex-direction: column; } button { width: 100%; } .confidence-row { grid-template-columns: 1fr; gap: 8px; } .files-list li { align-items: flex-start; flex-direction: column; gap: 3px; } }

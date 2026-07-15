@@ -1,5 +1,26 @@
 import { useState } from 'react';
 
+function DiffView({ diff }) {
+  if (!diff) {
+    return <p className="empty-state">No patch is proposed because the available evidence is insufficient.</p>;
+  }
+
+  return (
+    <pre className="diff" aria-label="Proposed code diff">
+      {diff.split('\n').map((line, index) => {
+        const className = line.startsWith('+')
+          ? 'diff-addition'
+          : line.startsWith('-')
+            ? 'diff-removal'
+            : line.startsWith('@@') || line.startsWith('diff --git')
+              ? 'diff-meta'
+              : '';
+        return <code className={className} key={`${index}-${line}`}>{line}{'\n'}</code>;
+      })}
+    </pre>
+  );
+}
+
 export default function App() {
   const [issueUrl, setIssueUrl] = useState('');
   const [result, setResult] = useState(null);
@@ -65,9 +86,48 @@ export default function App() {
           </div>
           {error && <p className="error">{error}</p>}
           {result ? (
-            <pre>{JSON.stringify(result, null, 2)}</pre>
+            <div className="analysis-result">
+              <div className="confidence-row">
+                <div>
+                  <p className="section-label">Confidence</p>
+                  <strong>{Math.round(result.agent.confidence)}%</strong>
+                </div>
+                <div className="confidence-track" aria-label={`Confidence: ${Math.round(result.agent.confidence)} percent`}>
+                  <span style={{ width: `${result.agent.confidence}%` }} />
+                </div>
+              </div>
+
+              <section className="result-section">
+                <h3>Reasoning steps</h3>
+                <ol className="steps-list">
+                  {result.agent.steps.map((step) => (
+                    <li key={step.number}>
+                      <strong>{step.title}</strong>
+                      {step.output.hypothesis && <p>{step.output.hypothesis}</p>}
+                      {step.output.reasoning && <ul>{step.output.reasoning.map((item) => <li key={item}>{item}</li>)}</ul>}
+                      {step.output.explanation && <p>{step.output.explanation}</p>}
+                      {step.output.risks?.length > 0 && <p className="risks">Risks: {step.output.risks.join(' ')}</p>}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
+              <section className="result-section">
+                <h3>Relevant files</h3>
+                {result.agent.relevantFiles.length > 0 ? (
+                  <ul className="files-list">
+                    {result.agent.relevantFiles.map((file) => <li key={file.path}><code>{file.path}</code><span>{file.reason}</span></li>)}
+                  </ul>
+                ) : <p className="empty-state">No supported file candidates were identified.</p>}
+              </section>
+
+              <section className="result-section">
+                <h3>Proposed patch</h3>
+                <DiffView diff={result.agent.diff} />
+              </section>
+            </div>
           ) : !error && (
-            <p className="empty-state">Submit an issue URL to see the API response.</p>
+            <p className="empty-state">{isLoading ? 'Fetching issue context and preparing an analysis...' : 'Submit an issue URL to see the API response.'}</p>
           )}
         </section>
       </section>
