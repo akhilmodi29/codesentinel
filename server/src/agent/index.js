@@ -97,10 +97,9 @@ function issueContext(analysis) {
       owner: analysis.repository.owner,
       name: analysis.repository.name,
       defaultBranch: analysis.repository.defaultBranch,
-      fileTree: {
-        topLevel: analysis.repository.fileTree.topLevel,
-        src: analysis.repository.fileTree.src.slice(0, 150)
-      }
+      // Flat array of up to 300 source file paths, shallower paths first.
+      // Plain strings are far more token-efficient than objects with metadata.
+      filePaths: analysis.repository.fileTree.paths
     }
   };
 }
@@ -160,10 +159,7 @@ export async function runAnalysisPipeline(analysis) {
   logStep(hypothesisStep);
 
   // Step 2 — filter hypothesis files against the actual file tree
-  const treeEntries = [...analysis.repository.fileTree.topLevel, ...analysis.repository.fileTree.src];
-  const availableFiles = new Map(
-    treeEntries.filter((entry) => entry.type === 'blob').map((entry) => [entry.path, entry])
-  );
+  const availableFiles = new Set(analysis.repository.fileTree.paths);
   const relevantFiles = (hypothesis.relevantFiles ?? [])
     .filter((file) => availableFiles.has(file.path))
     .slice(0, MAX_RELEVANT_FILES);

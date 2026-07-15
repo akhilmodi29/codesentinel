@@ -122,6 +122,38 @@ function toTreeEntry(entry) {
   };
 }
 
+const EXCLUDED_PATH_PREFIXES = [
+  'node_modules/', 'dist/', 'build/', 'coverage/', '.next/', '.nuxt/',
+  '.cache/', '__pycache__/', 'vendor/', '.git/'
+];
+const EXCLUDED_EXTENSIONS = [
+  '.lock', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
+  '.woff', '.woff2', '.ttf', '.eot', '.otf', '.mp4', '.webm',
+  '.mp3', '.wav', '.pdf', '.zip', '.tar', '.gz', '.map'
+];
+const MAX_TREE_PATHS = 300;
+
+/**
+ * Build a flat, filtered, sorted list of source file paths from the raw git tree.
+ * Shallower paths come first (sorted by depth then alphabetically) so the model
+ * sees the overall structure before deep implementation files.
+ */
+function buildSourcePaths(entries) {
+  return entries
+    .filter((entry) => {
+      if (entry.type !== 'blob') return false;
+      if (EXCLUDED_PATH_PREFIXES.some((prefix) => entry.path.startsWith(prefix))) return false;
+      if (EXCLUDED_EXTENSIONS.some((ext) => entry.path.endsWith(ext))) return false;
+      return true;
+    })
+    .map((entry) => entry.path)
+    .sort((a, b) => {
+      const depthDiff = a.split('/').length - b.split('/').length;
+      return depthDiff !== 0 ? depthDiff : a.localeCompare(b);
+    })
+    .slice(0, MAX_TREE_PATHS);
+}
+
 export async function fetchRawFileContent({ owner, repo, path, ref }) {
   if (!path || path.startsWith('/') || path.includes('..')) {
     throw new GitHubApiError('Provide a repository-relative file path.', { status: 400 });
@@ -172,8 +204,10 @@ export async function fetchIssueAnalysis({ owner, repo, issueNumber }) {
       name: repo,
       defaultBranch: repository.default_branch,
       fileTree: {
-        topLevel: tree.tree.filter((entry) => !entry.path.includes('/')).map(toTreeEntry),
-        src: tree.tree.filter((entry) => entry.path === 'src' || entry.path.startsWith('src/')).map(toTreeEntry),
+        // Flat, filtered, sorted list of all blob paths in the repo.
+        // Shallower paths come first so the model sees structure before detail.
+        // Noise directories and binary extensions are excluded to save tokens.
+        paths: buildSourcePaths(tree.tree),
         truncated: tree.truncated === true
       }
     }
