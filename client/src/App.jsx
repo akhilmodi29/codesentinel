@@ -53,6 +53,12 @@ export default function App() {
     }
   }
 
+  const agent = result?.agent ?? null;
+  const confidence = typeof agent?.confidence === 'number' ? agent.confidence : null;
+  const steps = Array.isArray(agent?.steps) ? agent.steps : [];
+  const relevantFiles = Array.isArray(agent?.relevantFiles) ? agent.relevantFiles : [];
+  const diff = agent?.diff ?? '';
+
   return (
     <main className="page-shell">
       <section className="workspace" aria-labelledby="app-title">
@@ -87,44 +93,52 @@ export default function App() {
           {error && <p className="error">{error}</p>}
           {result ? (
             <div className="analysis-result">
-              <div className="confidence-row">
-                <div>
-                  <p className="section-label">Confidence</p>
-                  <strong>{Math.round(result.agent.confidence)}%</strong>
-                </div>
-                <div className="confidence-track" aria-label={`Confidence: ${Math.round(result.agent.confidence)} percent`}>
-                  <span style={{ width: `${result.agent.confidence}%` }} />
-                </div>
-              </div>
+              {agent ? (
+                <>
+                  <div className="confidence-row">
+                    <div>
+                      <p className="section-label">Confidence</p>
+                      <strong>{confidence !== null ? `${Math.round(confidence)}%` : 'N/A'}</strong>
+                    </div>
+                    <div className="confidence-track" aria-label={`Confidence: ${confidence !== null ? Math.round(confidence) : 0} percent`}>
+                      <span style={{ width: `${confidence !== null ? confidence : 0}%` }} />
+                    </div>
+                  </div>
 
-              <section className="result-section">
-                <h3>Reasoning steps</h3>
-                <ol className="steps-list">
-                  {result.agent.steps.map((step) => (
-                    <li key={step.number}>
-                      <strong>{step.title}</strong>
-                      {step.output.hypothesis && <p>{step.output.hypothesis}</p>}
-                      {step.output.reasoning && <ul>{step.output.reasoning.map((item) => <li key={item}>{item}</li>)}</ul>}
-                      {step.output.explanation && <p>{step.output.explanation}</p>}
-                      {step.output.risks?.length > 0 && <p className="risks">Risks: {step.output.risks.join(' ')}</p>}
-                    </li>
-                  ))}
-                </ol>
-              </section>
+                  <section className="result-section">
+                    <h3>Reasoning steps</h3>
+                    {steps.length > 0 ? (
+                      <ol className="steps-list">
+                        {steps.map((step) => (
+                          <li key={step.number}>
+                            <strong>{step.title}</strong>
+                            {step.output?.hypothesis && <p>{step.output.hypothesis}</p>}
+                            {step.output?.reasoning && <ul>{step.output.reasoning.map((item) => <li key={item}>{item}</li>)}</ul>}
+                            {step.output?.explanation && <p>{step.output.explanation}</p>}
+                            {step.output?.risks?.length > 0 && <p className="risks">Risks: {step.output.risks.join(' ')}</p>}
+                          </li>
+                        ))}
+                      </ol>
+                    ) : <p className="empty-state">No reasoning steps were returned.</p>}
+                  </section>
 
-              <section className="result-section">
-                <h3>Relevant files</h3>
-                {result.agent.relevantFiles.length > 0 ? (
-                  <ul className="files-list">
-                    {result.agent.relevantFiles.map((file) => <li key={file.path}><code>{file.path}</code><span>{file.reason}</span></li>)}
-                  </ul>
-                ) : <p className="empty-state">No supported file candidates were identified.</p>}
-              </section>
+                  <section className="result-section">
+                    <h3>Relevant files</h3>
+                    {relevantFiles.length > 0 ? (
+                      <ul className="files-list">
+                        {relevantFiles.map((file) => <li key={file.path}><code>{file.path}</code><span>{file.reason}</span></li>)}
+                      </ul>
+                    ) : <p className="empty-state">No supported file candidates were identified.</p>}
+                  </section>
 
-              <section className="result-section">
-                <h3>Proposed patch</h3>
-                <DiffView diff={result.agent.diff} />
-              </section>
+                  <section className="result-section">
+                    <h3>Proposed patch</h3>
+                    <DiffView diff={diff} />
+                  </section>
+                </>
+              ) : (
+                <p className="empty-state">The analysis response did not include agent details. Please try again.</p>
+              )}
             </div>
           ) : !error && (
             <p className="empty-state">{isLoading ? 'Fetching issue context and preparing an analysis...' : 'Submit an issue URL to see the API response.'}</p>

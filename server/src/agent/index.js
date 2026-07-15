@@ -1,7 +1,7 @@
 import { fetchRawFileContent } from '../github.js';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/responses';
-const DEFAULT_MODEL = 'gpt-5.6-luna';
+const DEFAULT_MODEL = 'gpt-4o-mini';
 const MAX_RELEVANT_FILES = 6;
 const MAX_FILE_CHARS = 24_000;
 
