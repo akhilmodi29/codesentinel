@@ -139,6 +139,7 @@ export async function fetchRawFileContent({ owner, repo, path, ref }) {
 }
 
 export async function fetchIssueAnalysis({ owner, repo, issueNumber }) {
+  console.log('DEBUG token present:', Boolean(process.env.GITHUB_TOKEN));
   const repositoryPath = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
   const issuePath = `${repositoryPath}/issues/${issueNumber}`;
 
