@@ -4,6 +4,7 @@ import { mkdirSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchIssueAnalysis, GitHubApiError, parseGitHubIssueUrl } from './github.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDirectory = path.join(__dirname, '..', 'data');
@@ -25,32 +26,30 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-app.post('/analyze', (req, res) => {
+app.post('/analyze', async (req, res) => {
   const { issueUrl } = req.body ?? {};
 
   if (typeof issueUrl !== 'string' || issueUrl.trim() === '') {
     return res.status(400).json({ error: 'issueUrl is required.' });
   }
 
-  let parsedUrl;
   try {
-    parsedUrl = new URL(issueUrl);
-  } catch {
-    return res.status(400).json({ error: 'Provide a valid GitHub issue URL.' });
+    const issueReference = parseGitHubIssueUrl(issueUrl.trim());
+    const analysis = await fetchIssueAnalysis(issueReference);
+    db.prepare('INSERT INTO analyses (issue_url) VALUES (?)').run(issueUrl.trim());
+    return res.json(analysis);
+  } catch (error) {
+    if (error instanceof GitHubApiError) {
+      const response = { error: error.message };
+      if (error.retryAfter !== undefined) {
+        response.retryAfter = error.retryAfter;
+      }
+      return res.status(error.status ?? 502).json(response);
+    }
+
+    console.error('Unexpected analysis error:', error);
+    return res.status(500).json({ error: 'Unable to analyze this issue.' });
   }
-
-  if (parsedUrl.hostname !== 'github.com') {
-    return res.status(400).json({ error: 'Provide a GitHub issue URL.' });
-  }
-
-  const cleanUrl = parsedUrl.toString();
-  db.prepare('INSERT INTO analyses (issue_url) VALUES (?)').run(cleanUrl);
-
-  return res.json({
-    status: 'placeholder',
-    issueUrl: cleanUrl,
-    message: 'Issue analysis will be available here soon.'
-  });
 });
 
 app.listen(port, () => {
