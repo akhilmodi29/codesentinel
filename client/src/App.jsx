@@ -108,7 +108,7 @@ export default function App() {
             <div className="analysis-result">
               {agent ? (
                 <>
-                  <div className="confidence-row">
+                  <div className={`confidence-row ${confidence >= 70 ? 'confidence-high' : confidence >= 40 ? 'confidence-medium' : 'confidence-low'}`}>
                     <div>
                       <p className="section-label">Confidence</p>
                       <strong>{confidence !== null ? `${Math.round(confidence)}%` : 'N/A'}</strong>
