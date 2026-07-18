@@ -1,55 +1,288 @@
-# Code Sentinel
+# 🛡️ Code Sentinel
 
-Code Sentinel accepts a GitHub issue URL and sends it to a small Express API. The API fetches the issue title, body, comments, and the repository's top-level and `src` file tree, then records submitted URLs in a local SQLite database.
+> AI-powered GitHub Issue Analyzer that investigates GitHub issues, identifies probable root causes, and generates implementation-ready fixes with proposed code diffs.
 
-## Requirements
+Code Sentinel helps developers understand GitHub issues faster by automatically analyzing an issue, exploring the relevant parts of the repository, and generating a structured engineering report using AI.
 
-- Node.js 22.5 or newer (the backend uses Node's built-in SQLite module)
+Instead of manually reading dozens of files, Code Sentinel narrows down the likely cause and suggests how to fix it.
+
+---
+
+## ✨ Features
+
+- 🔗 Analyze any public GitHub Issue using its URL
+- 🤖 AI-powered root cause analysis
+- 📂 Automatically explores the repository structure
+- 📝 Reads issue title, description, and discussion comments
+- 🎯 Identifies files most likely responsible
+- 💡 Generates implementation steps
+- 🔀 Produces a proposed Git-style code diff
+- 📋 Returns a PR-style explanation ready for developers
+- 📊 Confidence score indicating how likely the proposed solution is
+- 💾 Stores previously analyzed issues using SQLite
+
+---
+
+## 🚀 How It Works
+
+```text
+GitHub Issue URL
+        │
+        ▼
+Express Backend
+        │
+        ├── Fetch Issue
+        ├── Read Comments
+        ├── Explore Repository Tree
+        ├── Retrieve Relevant Files
+        ▼
+ OpenAI Analysis Pipeline
+        │
+        ├── Root Cause Detection
+        ├── File Selection
+        ├── Fix Strategy
+        ├── Code Diff Generation
+        ▼
+ Structured Engineering Report
+```
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+- React
+- Vite
+- CSS3
+
+### Backend
+
+- Node.js
+- Express
+- SQLite (Node built-in)
+- GitHub REST API
+- OpenAI API
+
+---
+
+## 📦 Project Structure
+
+```
+CodeSentinel/
+│
+├── client/          # React frontend
+├── server/          # Express backend
+│   ├── data/
+│   └── services/
+│
+├── README.md
+└── package.json
+```
+
+---
+
+# ⚙️ Requirements
+
+- Node.js **22.5+**
 - npm
+- GitHub Personal Access Token *(recommended)*
+- OpenAI API Key
 
-## Run locally
+---
 
-Install dependencies from the repository root:
+# 🚀 Getting Started
+
+## 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/code-sentinel.git
+
+cd code-sentinel
+```
+
+---
+
+## 2. Install dependencies
 
 ```bash
 npm --prefix server install
+
 npm --prefix client install
 ```
 
-Start the backend in one terminal:
+---
+
+## 3. Configure Environment Variables
+
+### macOS / Linux
 
 ```bash
-GITHUB_TOKEN=github_pat_your_token OPENAI_API_KEY=your_openai_api_key npm run dev:server
+export GITHUB_TOKEN=github_pat_xxxxxxxxx
+
+export OPENAI_API_KEY=your_openai_api_key
 ```
 
-On PowerShell:
+### Windows PowerShell
 
 ```powershell
-$env:GITHUB_TOKEN = "github_pat_your_token"
-$env:OPENAI_API_KEY = "your_openai_api_key"
+$env:GITHUB_TOKEN="github_pat_xxxxxxxxx"
+
+$env:OPENAI_API_KEY="your_openai_api_key"
+```
+
+(Optional)
+
+```bash
+OPENAI_MODEL=gpt-5.5
+```
+
+---
+
+## 4. Start Backend
+
+```bash
 npm run dev:server
 ```
 
-Start the frontend in a second terminal:
+Runs at
+
+```
+http://localhost:3001
+```
+
+---
+
+## 5. Start Frontend
 
 ```bash
 npm run dev:client
 ```
 
-Open the Vite URL shown in the second terminal, normally `http://localhost:5173`.
+Open
 
-The API runs on `http://localhost:3001`. During local frontend development, Vite proxies `/analyze` requests to that API. Submitted issue URLs are stored in `server/data/code-sentinel.db`.
-
-## API
-
-`POST /analyze`
-
-```json
-{ "issueUrl": "https://github.com/owner/repository/issues/123" }
+```
+http://localhost:5173
 ```
 
-Set `GITHUB_TOKEN` to a GitHub personal access token before starting the backend. A token with read access to the target repository can also access private repositories and receives a higher API rate limit. The backend can fetch public repositories without a token, subject to GitHub's lower unauthenticated rate limit.
+The Vite development server automatically proxies `/analyze` requests to the backend.
 
-Set `OPENAI_API_KEY` before starting the backend to enable the issue-analysis pipeline. The pipeline forms a root-cause hypothesis, selects and retrieves relevant file contents, proposes a diff, and returns a PR-style explanation. Set `OPENAI_MODEL` to override the default analysis model.
+---
 
-When GitHub reports a rate limit, the API responds with HTTP `429` and includes a `retryAfter` value in seconds when GitHub provides one.
+# 📡 API
+
+## Analyze GitHub Issue
+
+**POST**
+
+```
+/analyze
+```
+
+### Request
+
+```json
+{
+  "issueUrl": "https://github.com/owner/repository/issues/123"
+}
+```
+
+---
+
+### Example Response
+
+```json
+{
+  "confidence": 91,
+  "rootCause": "...",
+  "files": [
+    "src/App.jsx",
+    "src/components/Navbar.jsx"
+  ],
+  "implementationSteps": [],
+  "diff": "...",
+  "summary": "..."
+}
+```
+
+---
+
+# 🧠 Analysis Pipeline
+
+For every submitted GitHub Issue, Code Sentinel:
+
+1. Fetches the issue title and description
+2. Retrieves discussion comments
+3. Builds the repository file tree
+4. Identifies relevant source files
+5. Retrieves file contents
+6. Uses OpenAI to:
+   - determine the likely root cause
+   - estimate confidence
+   - generate implementation steps
+   - produce a proposed code diff
+   - write a PR-style explanation
+7. Stores the analyzed issue locally using SQLite
+
+---
+
+# 💾 Local Database
+
+Submitted issue URLs are automatically stored in
+
+```
+server/data/code-sentinel.db
+```
+
+to avoid duplicate processing and maintain analysis history.
+
+---
+
+# 🔑 GitHub Token
+
+A GitHub Personal Access Token is optional for public repositories but recommended.
+
+Benefits include:
+
+- Higher API rate limits
+- Access to private repositories (with appropriate permissions)
+- More reliable repository traversal
+
+Without a token, Code Sentinel uses GitHub's public API limits.
+
+---
+
+# ⚠️ Rate Limiting
+
+If GitHub's API rate limit is exceeded, the backend returns
+
+```
+HTTP 429
+```
+
+along with a `retryAfter` value (when provided by GitHub).
+
+---
+
+# 🎯 Future Improvements
+
+- Repository-wide semantic search
+- Multi-file dependency analysis
+- PR auto-generation
+- One-click GitHub Pull Request creation
+- Streaming AI responses
+- Dark mode
+- Support for GitLab and Bitbucket
+- Repository indexing for faster repeated analysis
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+Feel free to open an issue or submit a pull request.
+
+---
+
+## ⭐ If you found this project useful, consider giving it a star!
