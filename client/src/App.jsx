@@ -21,6 +21,16 @@ function DiffView({ diff }) {
   );
 }
 
+const sampleResult = {
+  agent: {
+    confidence: 78,
+    steps: [{ number: 1, title: "Root-cause hypothesis", output: { hypothesis: "Sample hypothesis text.", reasoning: ["Evidence A", "Evidence B"] } }],
+    relevantFiles: [{ path: "src/example.js", reason: "Contains the relevant logic." }],
+    diff: "@@ -1,2 +1,2 @@\n-old line\n+new line",
+    explanation: "Sample fix explanation."
+  }
+};
+
 export default function App() {
   const [issueUrl, setIssueUrl] = useState('');
   const [result, setResult] = useState(null);
@@ -81,6 +91,9 @@ export default function App() {
             />
             <button type="submit" disabled={isLoading}>
               {isLoading ? 'Analyzing...' : 'Analyze issue'}
+            </button>
+            <button type="button" onClick={() => setResult(sampleResult)}>
+              Try demo example
             </button>
           </div>
         </form>
