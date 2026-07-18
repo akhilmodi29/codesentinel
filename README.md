@@ -36,12 +36,13 @@ Express Backend
         ├── Explore Repository Tree
         ├── Retrieve Relevant Files
         ▼
- OpenAI Analysis Pipeline
+ AI Analysis Pipeline
         │
         ├── Root Cause Detection
         ├── File Selection
         ├── Fix Strategy
         ├── Code Diff Generation
+        ├── Confidence Estimation
         ▼
  Structured Engineering Report
 ```
@@ -62,19 +63,21 @@ Express Backend
 - Express
 - SQLite (Node built-in)
 - GitHub REST API
-- OpenAI API
+- AI Model API
 
 ---
 
 ## 📦 Project Structure
 
-```
+```text
 CodeSentinel/
 │
 ├── client/          # React frontend
 ├── server/          # Express backend
 │   ├── data/
-│   └── services/
+│   ├── routes/
+│   ├── services/
+│   └── utils/
 │
 ├── README.md
 └── package.json
@@ -87,7 +90,7 @@ CodeSentinel/
 - Node.js **22.5+**
 - npm
 - GitHub Personal Access Token *(recommended)*
-- OpenAI API Key
+- AI API Key
 
 ---
 
@@ -107,7 +110,6 @@ cd code-sentinel
 
 ```bash
 npm --prefix server install
-
 npm --prefix client install
 ```
 
@@ -119,33 +121,30 @@ npm --prefix client install
 
 ```bash
 export GITHUB_TOKEN=github_pat_xxxxxxxxx
-
-export OPENAI_API_KEY=your_openai_api_key
+export AI_API_KEY=your_api_key
+export AI_MODEL=your_model_name
 ```
 
 ### Windows PowerShell
 
 ```powershell
 $env:GITHUB_TOKEN="github_pat_xxxxxxxxx"
-
-$env:OPENAI_API_KEY="your_openai_api_key"
+$env:AI_API_KEY="your_api_key"
+$env:AI_MODEL="your_model_name"
 ```
 
-(Optional)
-
-```bash
-OPENAI_MODEL=gpt-5.5
-```
+> **Note:**  
+> If your chosen AI provider exposes an OpenAI-compatible API, you may keep the existing environment variable names used by the application.
 
 ---
 
-## 4. Start Backend
+## 4. Start the Backend
 
 ```bash
 npm run dev:server
 ```
 
-Runs at
+Runs on:
 
 ```
 http://localhost:3001
@@ -153,19 +152,19 @@ http://localhost:3001
 
 ---
 
-## 5. Start Frontend
+## 5. Start the Frontend
 
 ```bash
 npm run dev:client
 ```
 
-Open
+Open:
 
 ```
 http://localhost:5173
 ```
 
-The Vite development server automatically proxies `/analyze` requests to the backend.
+During development, Vite automatically proxies `/analyze` requests to the backend.
 
 ---
 
@@ -209,52 +208,53 @@ The Vite development server automatically proxies `/analyze` requests to the bac
 
 # 🧠 Analysis Pipeline
 
-For every submitted GitHub Issue, Code Sentinel:
+For every submitted GitHub issue, Code Sentinel:
 
-1. Fetches the issue title and description
-2. Retrieves discussion comments
-3. Builds the repository file tree
-4. Identifies relevant source files
-5. Retrieves file contents
-6. Uses OpenAI to:
-   - determine the likely root cause
+1. Fetches the issue title and description.
+2. Retrieves issue discussion comments.
+3. Builds the repository file tree.
+4. Identifies the most relevant source files.
+5. Retrieves file contents for analysis.
+6. Uses an AI model to:
+   - determine the most likely root cause
    - estimate confidence
    - generate implementation steps
    - produce a proposed code diff
    - write a PR-style explanation
-7. Stores the analyzed issue locally using SQLite
+7. Returns a structured engineering report.
+8. Stores the analyzed issue locally using SQLite.
 
 ---
 
 # 💾 Local Database
 
-Submitted issue URLs are automatically stored in
+Submitted issue URLs are automatically stored in:
 
 ```
 server/data/code-sentinel.db
 ```
 
-to avoid duplicate processing and maintain analysis history.
+This prevents duplicate processing and maintains a local analysis history.
 
 ---
 
 # 🔑 GitHub Token
 
-A GitHub Personal Access Token is optional for public repositories but recommended.
+A GitHub Personal Access Token is optional for public repositories but strongly recommended.
 
 Benefits include:
 
-- Higher API rate limits
+- Higher GitHub API rate limits
 - Access to private repositories (with appropriate permissions)
-- More reliable repository traversal
+- Faster and more reliable repository traversal
 
-Without a token, Code Sentinel uses GitHub's public API limits.
+Without a token, Code Sentinel falls back to GitHub's public API rate limits.
 
 ---
 
 # ⚠️ Rate Limiting
 
-If GitHub's API rate limit is exceeded, the backend returns
+If GitHub's API rate limit is exceeded, the backend returns:
 
 ```
 HTTP 429
@@ -266,14 +266,17 @@ along with a `retryAfter` value (when provided by GitHub).
 
 # 🎯 Future Improvements
 
-- Repository-wide semantic search
-- Multi-file dependency analysis
-- PR auto-generation
-- One-click GitHub Pull Request creation
-- Streaming AI responses
-- Dark mode
-- Support for GitLab and Bitbucket
-- Repository indexing for faster repeated analysis
+- 🔍 Repository-wide semantic search
+- 🧠 Multi-file dependency analysis
+- 🤖 Automatic Pull Request generation
+- 🔄 One-click GitHub Pull Request creation
+- ⚡ Streaming AI responses
+- 🌙 Dark mode
+- 🦊 GitLab support
+- 🪣 Bitbucket support
+- 📚 Repository indexing for faster repeated analysis
+- 💬 Inline fix explanations
+- 📈 Historical issue analytics
 
 ---
 
@@ -281,7 +284,7 @@ along with a `retryAfter` value (when provided by GitHub).
 
 Contributions are welcome!
 
-Feel free to open an issue or submit a pull request.
+Feel free to open an issue or submit a pull request to improve Code Sentinel.
 
 ---
 
