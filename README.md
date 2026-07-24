@@ -99,7 +99,7 @@ CodeSentinel/
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/code-sentinel.git
+git clone https://github.com/akhilmodi29/code-sentinel.git
 
 cd code-sentinel
 ```
